@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include "CudaSimulation.hpp"
+#include "stateExport.hpp"
 
 
 using Clock = std::chrono::steady_clock;
@@ -26,8 +27,12 @@ int main(int argNum, char* argVals[]){
     bool soa = true;
 
     //take in input variables
+
+    //set batch size
     if (argNum > 1) N = std::stoi(argVals[1]);
+    //set step size
     if (argNum > 2) steps = std::stoi(argVals[2]);
+    //set AoS vs SoA version
     if (argNum > 3) {
         const std::string value = argVals[3];
 
@@ -39,6 +44,10 @@ int main(int argNum, char* argVals[]){
             std::cerr << "Layout must be 1 (SoA) or 0 (AoS).\n";
             return 1;
         }
+    }
+    //file name for data harness
+    if (argNum > 4) {
+        exportStates(vehicles, argVals[4]);
     }
 
     std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
