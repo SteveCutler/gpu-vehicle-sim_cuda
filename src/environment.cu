@@ -24,7 +24,7 @@ velFieldy(nullptr){
 }
 
 __device__ float2 environment::getDisturbance(float x, float y) const{
-    {
+    
 
 
     // bounds check
@@ -33,15 +33,17 @@ __device__ float2 environment::getDisturbance(float x, float y) const{
         return make_float2(0.0f, 0.0f);
     }
 
-    std::size_t pos = y * m_width + x;
+    const std::size_t col = static_cast<std::size_t>(x);
+    const std::size_t row = static_cast<std::size_t>(y);
+    const std::size_t pos = y * m_width + x;
+    
     //update velocity fields with dt
     return make_float2(velFieldx[pos], velFieldy[pos]);
 
-}
+};
 
 void environment::updateTime(float dt){
     //track elapsed time for random velocity generation later
     elapsed += dt;
 }
 
-}
