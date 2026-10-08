@@ -59,7 +59,7 @@ int main(int argNum, char* argVals[]){
             runCudaSimulationSoA(vehicles, env, N, dt, steps);
         }else{
             std::cout << "AoS" << std::endl;
-            runCudaSimulationAos(vehicles, env, N, dt, steps);
+            runCudaSimulationAoS(vehicles, env, N, dt, steps);
         }
     }
     catch (const std::exception& error) {
