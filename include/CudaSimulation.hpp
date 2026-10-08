@@ -5,7 +5,7 @@
 
 void runCudaSimulation(
     vehicleBatch& vehicles,
-    const environment& env,
+    environment& env,
     std::size_t N,
     float dt,
     std::size_t steps);

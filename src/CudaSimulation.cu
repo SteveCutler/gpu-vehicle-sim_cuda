@@ -59,7 +59,7 @@ __global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, flo
     return;
 }
 
-void runCudaSimulation(vehicleBatch& vehicles, environment env, size_t N, float dt, std::size_t steps){
+void runCudaSimulation(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
 
     std::size_t curr_step = 0;
 
