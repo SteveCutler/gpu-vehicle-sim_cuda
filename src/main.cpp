@@ -6,18 +6,29 @@
 #include <chrono>
 #include <iostream>
 #include "CudaSimulation.cu"
+#include <string>
 
 
 using Clock = std::chrono::steady_clock;
 
-int main(){
+int main(int argNum, char* argv[]){
 
 
     std::cout << "starting up..." << std::endl;
     //master variables
     constexpr std::size_t width = 500;
     constexpr std::size_t height = 500;
-    constexpr std::size_t N = 5;
+
+    //default values
+    std::size_t N = 1000;
+    std::size_t steps = 1000;
+
+    //take in input variables
+    if (argc > 1) N = std::stoi(argv[1]);
+    if (argc > 2) steps = std::stoi(argv[2]);
+
+    std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
+    
 
     constexpr float dt = 0.02f;
 
@@ -29,7 +40,7 @@ int main(){
 
     //launch Cuda Kernel operations
     try{
-        runCudaSimulation(vehicles, N, dt);
+        runCudaSimulation(vehicles, N, dt, steps);
     }
     catch(const std::exception& error){
         throw std::runtime_error(cudaGetErrorString(error));
