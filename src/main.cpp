@@ -45,10 +45,7 @@ int main(int argNum, char* argVals[]){
             return 1;
         }
     }
-    //file name for data harness
-    if (argNum > 4) {
-        exportStates(vehicles, argVals[4]);
-    }
+    
 
     std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
 
@@ -91,6 +88,10 @@ int main(int argNum, char* argVals[]){
     std::cout << "Execution time: " << seconds << " seconds\n";
     std::cout << "Vehicle updates/sec: " << updates / seconds << '\n';
 
+    //file name for data harness
+    if (argNum > 4) {
+        exportStates(vehicles, argVals[4]);
+    }
 
 
     return 0;
