@@ -10,7 +10,7 @@
 
 
 
-__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env){
+__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -116,7 +116,7 @@ void runCudaSimulation(vehicleBatch& vehicles, environment env, size_t N, float 
 
         
         //launch cuda kernel
-        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env);
+        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt);
         
         //check for kernel launch errors
         cudaError_t error = cudaGetLastError();
@@ -126,7 +126,7 @@ void runCudaSimulation(vehicleBatch& vehicles, environment env, size_t N, float 
         }
 
         //increment step counter
-        env.updateTime(dt)
+        env.updateTime(dt);
         curr_step++;
     }
 

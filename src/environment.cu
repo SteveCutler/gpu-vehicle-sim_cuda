@@ -35,8 +35,8 @@ __device__ float2 environment::getDisturbance(float x, float y) const{
 
     const std::size_t col = static_cast<std::size_t>(x);
     const std::size_t row = static_cast<std::size_t>(y);
-    const std::size_t pos = y * m_width + x;
-    
+    const std::size_t pos = row * m_width + col;
+
     //update velocity fields with dt
     return make_float2(velFieldx[pos], velFieldy[pos]);
 
