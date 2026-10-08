@@ -30,7 +30,7 @@ __global__ void updateAoS(VehicleState* vehicles, std::size_t N, environment env
     VehicleState newState;
     
     //create vehicleState object with thread vehicle
-    vs = vehicles[i]
+    vs = vehicles[i];
 
     //pass to controller 
     action = controller.steer_controller(vs);
@@ -59,7 +59,7 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
     }
     
     //creating devices for vehicle batch data, allocating memory and copying data over
-    float* d_vehicles = nullptr;
+    VehicleState* d_vehicles = nullptr;
     cudaMalloc(&d_vehicles, floatBytes);
     cudaMemcpy(d_vehicles, states.data(), floatBytes, cudaMemcpyHostToDevice);
     
@@ -111,7 +111,7 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
 
     //set vehicleBatch values from computed data
     for(int i = 0; i < N; i++){
-        vehicles.set(i,states[i])
+        vehicles.set(i,states[i]);
     }
 
     return;
