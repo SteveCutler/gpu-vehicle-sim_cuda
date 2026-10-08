@@ -5,8 +5,8 @@
 #include "dynamics.hpp"
 #include <chrono>
 #include <iostream>
-#include "CudaSimulation.cu"
 #include <string>
+#include "CudaSimulation.hpp"
 
 
 using Clock = std::chrono::steady_clock;
@@ -33,17 +33,20 @@ int main(int argNum, char* argVals[]){
     //initialize vehicleState data
     vehicleBatch vehicles(N, width, height);
 
+    //init environment
+    environment env(width, height);
+
     //start wallclock timer for performance measurement
     const auto start = Clock::now();
 
     //launch Cuda Kernel operations
     try{
-        runCudaSimulation(vehicles, N, dt, steps);
+        runCudaSimulation(vehicles, env, N, dt, steps);
     }
-    catch(const std::exception& error){
-        throw std::runtime_error(cudaGetErrorString(error));
-        return 1;
-    }
+    catch (const std::exception& error) {
+    std::cerr << "Simulation failed: " << error.what() << '\n';
+    return 1;
+}
 
     //end clock
     const auto stop = Clock::now();
@@ -53,10 +56,10 @@ int main(int argNum, char* argVals[]){
         std::chrono::duration<double>(stop - start).count();
 
     //multiply steps by vehicles to get total updates
-    const double updates = static_cast<double>(N) * curr_step;
+    const double updates = static_cast<double>(N) * steps;
 
     std::cout << "Vehicles: " << N << '\n';
-    std::cout << "Completed steps: " << curr_step << '\n';
+    std::cout << "Completed steps: " << steps << '\n';
     std::cout << "Execution time: " << seconds << " seconds\n";
     std::cout << "Vehicle updates/sec: " << updates / seconds << '\n';
 

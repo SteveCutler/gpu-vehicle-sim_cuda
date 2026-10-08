@@ -6,10 +6,11 @@
 #include <cuda_runtime.h>
 #include "vehicleTypes.hpp"
 #include <stdexcept>
+#include "CudaSimulation.hpp"
 
 
 
-__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt){
+__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -54,17 +55,13 @@ __global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, flo
         vs_vy[i] = newState.vy;
         vs_heading[i] = newState.heading;
         vs_turnRate[i] = newState.turnRate;
-        vs_goalx[i] = newState.goalx;
-        vs_goaly[i] = newState.goaly;
 
     return;
 }
 
-void runCudaSimulation(vehicleBatch& vehicles, std::size_t N, float dt){
+void runCudaSimulation(vehicleBatch& vehicles, environment env, size_t N, float dt, std::size_t steps){
 
     std::size_t curr_step = 0;
-
-    constexpr std::size_t steps = 1000;
 
     const std::size_t floatBytes = N * sizeof(float);
 
@@ -119,7 +116,7 @@ void runCudaSimulation(vehicleBatch& vehicles, std::size_t N, float dt){
 
         
         //launch cuda kernel
-        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt);
+        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env);
         
         //check for kernel launch errors
         cudaError_t error = cudaGetLastError();
@@ -127,13 +124,15 @@ void runCudaSimulation(vehicleBatch& vehicles, std::size_t N, float dt){
         if (error != cudaSuccess) {
             throw std::runtime_error(cudaGetErrorString(error));
         }
+
         //increment step counter
+        env.updateTime(dt)
         curr_step++;
     }
 
     //error check
 
-    cudaError_t error = cudaDeviceSynchronize();
+    error = cudaDeviceSynchronize();
 
     //Handle failure.
     if (error != cudaSuccess) {

@@ -3,8 +3,6 @@
 #include <cuda_runtime.h>
 
 
-Dynamics::Dynamics(){};
-
 VehicleState Dynamics::step_update(const VehicleState& vs, const Action& action, const environment& env, const float dt){
 
     //initial params
@@ -18,8 +16,8 @@ VehicleState Dynamics::step_update(const VehicleState& vs, const Action& action,
     const float2 current = env.getDisturbance(vs.x, vs.y);
 
     //Forces in x y coords
-    const float thrustX = action.thrust * std::cos(vs.heading);
-    const float thrustY = action.thrust * std::sin(vs.heading);
+    const float thrustX = action.thrust * cosf(vs.heading);
+    const float thrustY = action.thrust * sinf(vs.heading);
 
     //current is 0 for this first implementation
     const float relativeVx = vs.vx - current.x;
@@ -41,7 +39,7 @@ VehicleState Dynamics::step_update(const VehicleState& vs, const Action& action,
     newVs.y = vs.y + newVs.vy * dt;
 
     newVs.turnRate = vs.turnRate + angularAcceleration * dt;
-    newVs.heading = std::remainder(vs.heading + newVs.turnRate * dt, 2.f * pi);
+    newVs.heading = remainderf(vs.heading + newVs.turnRate * dt, 2.f * pi);
 
     return newVs;
 }

@@ -3,17 +3,15 @@
 #include <algorithm>
 
 
-Controller::Controller(){};
-
 Action Controller::steer_controller(const VehicleState& vs){
 
     constexpr float pi = 3.14159265359f;
 
     //use arctangent to calculate desired heading angle
-    const float desiredHeading = std::atan2(vs.goaly - vs.y, vs.goalx - vs.x);
+    const float desiredHeading = atan2f(vs.goaly - vs.y, vs.goalx - vs.x);
 
     //calculate shortest angle corrective between current heading and desired heading
-    const float headingError = std::remainder(desiredHeading - vs.heading, 2.0f * pi);
+    const float headingError = remainderf(desiredHeading - vs.heading, 2.0f * pi);
 
     //PD controls
     constexpr float kp = 4.f;
@@ -21,10 +19,10 @@ Action Controller::steer_controller(const VehicleState& vs){
     constexpr float maxTorque = 4.f;
 
     Action action{};
-    action.torque = std::clamp(
-        kp * headingError - kd * vs.turnRate,
-        -maxTorque, maxTorque
-    );
+    action.torque = fminf(maxTorque, fmaxf(
+        -maxTorque, kp * headingError - kd * vs.turnRate
+    ));
+ 
 
     //create dynamic thrust
     constexpr float distGain = 5.f;
@@ -34,25 +32,23 @@ Action Controller::steer_controller(const VehicleState& vs){
 
     float distx = vs.x - vs.goalx;
     float disty = vs.y - vs.goaly;
-    float dist = std::sqrt(distx*distx + disty*disty);
+    float dist = sqrt(distx*distx + disty*disty);
 
     //measure if pointing towards goal
-    float alignment = std::max(0.0f, std::cos(headingError));
+    float alignment = fmaxf(0.0f, std::cos(headingError));
 
     //clamp speed at max and multiply by direction pointing
-    float desiredSpeed = std::min(maxSpeed, dist*distGain) * alignment;
+    float desiredSpeed = fminf(maxSpeed, dist*distGain) * alignment;
 
     //measure actual speed
-    float actualSpeed = vs.vx * std::cos(vs.heading) 
-                        + vs.vy * std::sin(vs.heading);
+    float actualSpeed = vs.vx * cosf(vs.heading) 
+                        + vs.vy * sinf(vs.heading);
 
     //discrepency between desired and actual
     float speedError = desiredSpeed - actualSpeed;
 
-    action.thrust = std::clamp(
-        speedError * speedGain,
-        -maxThrust,
-        maxThrust
+    action.thrust = fminf(maxThrust,
+        fmaxf(-maxThrust, speedError * speedGain)
     );
 
     return action;
