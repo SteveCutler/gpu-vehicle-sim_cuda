@@ -3,7 +3,7 @@
 #include <algorithm>
 
 
-Action Controller::steer_controller(const VehicleState& vs){
+__device__ Action Controller::steer_controller(const VehicleState& vs){
 
     constexpr float pi = 3.14159265359f;
 
