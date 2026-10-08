@@ -11,26 +11,24 @@
 
 using Clock = std::chrono::steady_clock;
 
-int main(int argNum, char* argv[]){
+int main(int argNum, char* argVals[]){
 
 
     std::cout << "starting up..." << std::endl;
     //master variables
     constexpr std::size_t width = 500;
     constexpr std::size_t height = 500;
+    constexpr float dt = 0.02f;
 
     //default values
     std::size_t N = 1000;
     std::size_t steps = 1000;
 
     //take in input variables
-    if (argc > 1) N = std::stoi(argv[1]);
-    if (argc > 2) steps = std::stoi(argv[2]);
+    if (argNum > 1) N = std::stoi(argVals[1]);
+    if (argNum > 2) steps = std::stoi(argVals[2]);
 
     std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
-    
-
-    constexpr float dt = 0.02f;
 
     //initialize vehicleState data
     vehicleBatch vehicles(N, width, height);
