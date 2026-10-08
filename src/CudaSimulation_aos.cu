@@ -10,7 +10,7 @@
 
 
 
-__global__ void update(float* vehicles std::size_t N, environment env, float dt){
+__global__ void updateAoS(VehicleState* vehicles, std::size_t N, environment env, float dt){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -44,18 +44,24 @@ __global__ void update(float* vehicles std::size_t N, environment env, float dt)
     return;
 }
 
-void runCudaSimulation(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
+void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
 
     std::size_t curr_step = 0;
 
     const std::size_t floatBytes = N * sizeof(VehicleState);
 
-    //create GPU environment struct
+    //create VehicleState vector
+
+    std::vector<VehicleState>states(N);
+
+    for(int i = 0; i < N; i++){
+        states[i] = vehicles.load(i);
+    }
     
     //creating devices for vehicle batch data, allocating memory and copying data over
     float* d_vehicles = nullptr;
     cudaMalloc(&d_vehicles, floatBytes);
-    cudaMemcpy(d_vehicles, vehicles.data(), floatBytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_vehicles, states.data(), floatBytes, cudaMemcpyHostToDevice);
     
 
     //check for allocation errors
@@ -74,7 +80,7 @@ void runCudaSimulation(vehicleBatch& vehicles, environment& env, std::size_t N, 
 
         
         //launch cuda kernel
-        update<<<blocks,threads>>>(d_vehicles N, env, dt);
+        updateAoS<<<blocks,threads>>>(d_vehicles, N, env, dt);
         
         //check for kernel launch errors
         cudaError_t error = cudaGetLastError();
@@ -100,8 +106,13 @@ void runCudaSimulation(vehicleBatch& vehicles, environment& env, std::size_t N, 
 
     //copy data back over
 
-    cudaMemcpy(vehicles.data(), d_vehicles, floatBytes, cudaMemcpyDeviceToHost);
+    cudaMemcpy(states.data(), d_vehicles, floatBytes, cudaMemcpyDeviceToHost);
     cudaFree(d_vehicles);
+
+    //set vehicleBatch values from computed data
+    for(int i = 0; i < N; i++){
+        vehicles.set(i,states[i])
+    }
 
     return;
 

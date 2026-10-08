@@ -56,10 +56,10 @@ int main(int argNum, char* argVals[]){
     try{
         if(soa == true){
             std::cout << "SoA" << std::endl;
-            runCudaSimulation_soa(vehicles, env, N, dt, steps);
+            runCudaSimulationSoA(vehicles, env, N, dt, steps);
         }else{
             std::cout << "AoS" << std::endl;
-            runCudaSimulation_aos(vehicles, env, N, dt, steps);
+            runCudaSimulationAos(vehicles, env, N, dt, steps);
         }
     }
     catch (const std::exception& error) {
