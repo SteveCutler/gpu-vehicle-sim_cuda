@@ -3,14 +3,14 @@
 #include "vehicleBatch.hpp"
 #include "environment.hpp"
 
-void runCudaSimulation_soa(
+void runCudaSimulationSoA(
     vehicleBatch& vehicles,
     environment& env,
     std::size_t N,
     float dt,
     std::size_t steps
 );
-void runCudaSimulation_aos(
+void runCudaSimulationAoS(
     vehicleBatch& vehicles,
     environment& env,
     std::size_t N,
