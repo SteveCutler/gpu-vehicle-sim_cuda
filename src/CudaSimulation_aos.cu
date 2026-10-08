@@ -1,0 +1,108 @@
+#include <iostream>
+#include "environment.hpp"
+#include "vehicleBatch.hpp"
+#include "dynamics.hpp"
+#include "controller.hpp"
+#include <cuda_runtime.h>
+#include "vehicleTypes.hpp"
+#include <stdexcept>
+#include "CudaSimulation.hpp"
+
+
+
+__global__ void update(float* vehicles std::size_t N, environment env, float dt){
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i >= N){
+        return;
+    }
+
+    //create controller object
+    Controller controller;
+
+    //create dynamics updater
+    Dynamics dynamics;
+
+    //allocating variables outside hot loop
+    VehicleState vs;
+    Action action;
+    VehicleState newState;
+    
+    //create vehicleState object with thread vehicle
+    vs = vehicles[i]
+
+    //pass to controller 
+    action = controller.steer_controller(vs);
+
+    //calculate new state
+    newState = dynamics.step_update(vs, action, env, dt);
+
+    //update old state
+    vehicles[i] = newState;
+
+    return;
+}
+
+void runCudaSimulation(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
+
+    std::size_t curr_step = 0;
+
+    const std::size_t floatBytes = N * sizeof(VehicleState);
+
+    //create GPU environment struct
+    
+    //creating devices for vehicle batch data, allocating memory and copying data over
+    float* d_vehicles = nullptr;
+    cudaMalloc(&d_vehicles, floatBytes);
+    cudaMemcpy(d_vehicles, vehicles.data(), floatBytes, cudaMemcpyHostToDevice);
+    
+
+    //check for allocation errors
+    cudaError_t error = cudaGetLastError();
+
+    if (error != cudaSuccess) {
+        throw std::runtime_error(cudaGetErrorString(error));
+    }
+
+    //threading setup
+    std::size_t threads = 256;
+    std::size_t blocks = (N + threads-1)/threads;
+
+        //run sim for steps amount of steps
+    while(curr_step < steps){
+
+        
+        //launch cuda kernel
+        update<<<blocks,threads>>>(d_vehicles N, env, dt);
+        
+        //check for kernel launch errors
+        cudaError_t error = cudaGetLastError();
+
+        if (error != cudaSuccess) {
+            throw std::runtime_error(cudaGetErrorString(error));
+        }
+
+        //increment step counter
+        env.updateTime(dt);
+        curr_step++;
+    }
+
+    //error check
+
+    error = cudaDeviceSynchronize();
+
+    //Handle failure.
+    if (error != cudaSuccess) {
+        throw std::runtime_error(cudaGetErrorString(error));
+    }
+
+
+    //copy data back over
+
+    cudaMemcpy(vehicles.data(), d_vehicles, floatBytes, cudaMemcpyDeviceToHost);
+    cudaFree(d_vehicles);
+
+    return;
+
+};

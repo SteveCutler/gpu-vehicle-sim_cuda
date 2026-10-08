@@ -12,8 +12,8 @@ add_executable(vehicle_sim
     src/environment.cu
     src/dynamics.cu
     src/controller.cu
-    src/CudaSimulation.cu
-
+    src/CudaSimulation_soa.cu
+    src/CudaSimulation_aos.cu
 )
 
 target_include_directories(vehicle_sim PRIVATE

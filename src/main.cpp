@@ -23,10 +23,23 @@ int main(int argNum, char* argVals[]){
     //default values
     std::size_t N = 1000;
     std::size_t steps = 1000;
+    bool soa = true;
 
     //take in input variables
     if (argNum > 1) N = std::stoi(argVals[1]);
     if (argNum > 2) steps = std::stoi(argVals[2]);
+    if (argNum > 3) {
+        const std::string value = argVals[3];
+
+        if (value == "1") {
+            soa = true;
+        } else if (value == "0") {
+            soa = false;
+        } else {
+            std::cerr << "Layout must be 1 (SoA) or 0 (AoS).\n";
+            return 1;
+        }
+    }
 
     std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
 
@@ -41,12 +54,18 @@ int main(int argNum, char* argVals[]){
 
     //launch Cuda Kernel operations
     try{
-        runCudaSimulation(vehicles, env, N, dt, steps);
+        if(soa == true){
+            std::cout << "SoA" << std::endl;
+            runCudaSimulation_soa(vehicles, env, N, dt, steps);
+        }else{
+            std::cout << "AoS" << std::endl;
+            runCudaSimulation_aos(vehicles, env, N, dt, steps);
+        }
     }
     catch (const std::exception& error) {
-    std::cerr << "Simulation failed: " << error.what() << '\n';
-    return 1;
-}
+        std::cerr << "Simulation failed: " << error.what() << '\n';
+        return 1;
+    }
 
     //end clock
     const auto stop = Clock::now();
