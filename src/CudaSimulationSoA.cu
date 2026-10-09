@@ -10,7 +10,7 @@
 
 
 
-__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt){
+__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt, std::size_t step){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -46,7 +46,7 @@ __global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, flo
     action = controller.steer_controller(vs);
 
     //calculate new state
-    newState = dynamics.step_update(vs, action, env, dt);
+    newState = dynamics.step_update(vs, action, env, dt, step);
 
     //update old state
         vs_x[i] = newState.x;
@@ -116,7 +116,7 @@ void runCudaSimulationSoA(vehicleBatch& vehicles, environment& env, std::size_t 
 
         
         //launch cuda kernel
-        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt);
+        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt, curr_step);
         
         //check for kernel launch errors
         cudaError_t error = cudaGetLastError();

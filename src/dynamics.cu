@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 
 
-__device__ VehicleState Dynamics::step_update(const VehicleState& vs, const Action& action, const environment& env, const float dt){
+__device__ VehicleState Dynamics::step_update(const VehicleState& vs, const Action& action, const environment& env, const float dt, std::size_t step){
 
     //initial params
     constexpr float mass = 1.0f;

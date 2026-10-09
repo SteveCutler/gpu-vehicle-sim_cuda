@@ -10,7 +10,7 @@
 
 
 
-__global__ void updateAoS(VehicleState* vehicles, std::size_t N, environment env, float dt){
+__global__ void updateAoS(VehicleState* vehicles, std::size_t N, environment env, float dt, std::size_t step){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -36,7 +36,7 @@ __global__ void updateAoS(VehicleState* vehicles, std::size_t N, environment env
     action = controller.steer_controller(vs);
 
     //calculate new state
-    newState = dynamics.step_update(vs, action, env, dt);
+    newState = dynamics.step_update(vs, action, env, dt, step);
 
     //update old state
     vehicles[i] = newState;
@@ -80,7 +80,7 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
 
         
         //launch cuda kernel
-        updateAoS<<<blocks,threads>>>(d_vehicles, N, env, dt);
+        updateAoS<<<blocks,threads>>>(d_vehicles, N, env, dt, curr_step);
         
         //check for kernel launch errors
         cudaError_t error = cudaGetLastError();

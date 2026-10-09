@@ -17,7 +17,7 @@ float* velFieldy;
 public:
 environment(std::size_t w, std::size_t h);
 
-__device__ float2 getDisturbance(float x, float y) const;
+__device__ float2 getDisturbance(float x, float y, float time) const;
 
 void updateTime(float dt);
 

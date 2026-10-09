@@ -4,41 +4,44 @@
 environment::environment(std::size_t w, std::size_t h): 
 m_width(w), 
 m_height(h),
-elapsed(0.0f),
-velFieldx(nullptr), 
-velFieldy(nullptr){
+elapsed(0.0f)
+{
 
     //wind vel field  zero across the board for first implementation
     //in later implementation create curl noise field
 
-    //allocating velfields as CUDA buffers
-    const std::size_t bytes = m_width * m_height * sizeof(float);
-    
-    //introduce more robust error handling
-    cudaMalloc(&velFieldx, bytes);
-    cudaMalloc(&velFieldy, bytes);
-
-    cudaMemset(velFieldx, 0.0, bytes);
-    cudaMemset(velFieldy, 0.0, bytes);
     
 }
 
-__device__ float2 environment::getDisturbance(float x, float y) const{
+__device__ float2 environment::getDisturbance(float x, float y, float time) const{
     
-
-
     // bounds check
     if(x < 0.0f || x >= static_cast<float>(m_width) || 
     y < 0.0f || y >= static_cast<float>(m_height)){
         return make_float2(0.0f, 0.0f);
     }
 
-    const std::size_t col = static_cast<std::size_t>(x);
-    const std::size_t row = static_cast<std::size_t>(y);
-    const std::size_t pos = row * m_width + col;
+    //cyclical wind field parameters
+    constexpr float amplitude = 5.5f;
+    constexpr float wavelength = 1000.f;
+    constexpr float timeMult = 10.f;
+    constexpr float twopi = 6.283185f;
 
-    //update velocity fields with dt
-    return make_float2(velFieldx[pos], velFieldy[pos]);
+    //time mult factor
+    float x_evolve = x - timeMult * time;
+    float y_evolve = y - timeMult*3.231 * time;
+
+    //creating gust strength based on cycle point
+    float x_angle = (x_evolve / wavelength) * twopi;
+    float x_gust = sinf(x_angle);
+
+    float y_angle = (y_evolve / wavelength) * twopi;
+    float y_gust = cosf(y_angle);
+
+    float windX = amplitude * x_gust;
+    float windY = amplitude * y_gust;
+
+    return {windX, windY};
 
 };
 
