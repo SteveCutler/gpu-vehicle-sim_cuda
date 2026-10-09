@@ -116,11 +116,32 @@ void runCudaSimulationSoA_batched(vehicleBatch& vehicles, environment& env, std:
     std::size_t threads = 256;
     std::size_t blocks = (N + threads-1)/threads;
 
+    //Start CUDA event timer
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     //all steps batched on GPU
     
     //launch cuda kernel
     update_SoA_batched<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt, steps);
     
+    //stop CUDA timer
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0.0f;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
+    std::cout << "GPU loop time: "
+            << milliseconds / 1000.0f
+            << " seconds\n";
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
     //check for kernel launch errors
     error = cudaGetLastError();
 

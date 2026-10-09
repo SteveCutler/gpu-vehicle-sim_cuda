@@ -75,7 +75,14 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
     std::size_t threads = 256;
     std::size_t blocks = (N + threads-1)/threads;
 
-        //run sim for steps amount of steps
+    //Start CUDA event timer
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
+    //run sim for steps amount of steps
     while(curr_step < steps){
 
         
@@ -92,6 +99,19 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
  
         curr_step++;
     }
+
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0.0f;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
+    std::cout << "GPU loop time: "
+            << milliseconds / 1000.0f
+            << " seconds\n";
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     //error check
 
