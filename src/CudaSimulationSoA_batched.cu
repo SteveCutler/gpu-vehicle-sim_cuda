@@ -122,7 +122,7 @@ void runCudaSimulationSoA_batched(vehicleBatch& vehicles, environment& env, std:
     update_SoA_batched<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt, steps);
     
     //check for kernel launch errors
-    cudaError_t error = cudaGetLastError();
+    error = cudaGetLastError();
 
     if (error != cudaSuccess) {
         throw std::runtime_error(cudaGetErrorString(error));
