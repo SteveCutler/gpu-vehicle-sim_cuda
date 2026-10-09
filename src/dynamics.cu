@@ -13,7 +13,7 @@ __device__ VehicleState Dynamics::step_update(const VehicleState& vs, const Acti
     constexpr float pi = 3.14159265359f;
 
     //retrieve wind disturbance at this position
-    const float2 current = env.getDisturbance(vs.x, vs.y);
+    const float2 current = env.getDisturbance(vs.x, vs.y, dt * step);
 
     //Forces in x y coords
     const float thrustX = action.thrust * cosf(vs.heading);
