@@ -10,24 +10,26 @@
 
 
 
-__global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt, std::size_t step){
+__global__ void update_SoA_batched(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, float* vs_heading, float* vs_turnRate, const float* vs_goalx, const float* vs_goaly, std::size_t N, environment env, float dt, std::size_t step){
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if(i >= N){
         return;
     }
+    
+    int curr_step = 0;
 
+    
     //create controller object
     Controller controller;
-
+    
     //create dynamics updater
     Dynamics dynamics;
-
+    
     //allocating variables outside hot loop
     VehicleState vs;
     Action action;
-    VehicleState newState;
     
     //create vehicleState object with thread vehicle
     vs = {
@@ -40,28 +42,31 @@ __global__ void update(float* vs_x, float* vs_y, float* vs_vx, float* vs_vy, flo
         vs_goalx[i],
         vs_goaly[i]
     };
+    
+    while(curr_step < step){
+        
+        //pass to controller 
+        action = controller.steer_controller(vs);
+    
+        //calculate new state
+        vs = dynamics.step_update(vs, action, env, dt, curr_step);
 
-
-    //pass to controller 
-    action = controller.steer_controller(vs);
-
-    //calculate new state
-    newState = dynamics.step_update(vs, action, env, dt, step);
+        curr_step++;
+    }
 
     //update old state
-        vs_x[i] = newState.x;
-        vs_y[i] = newState.y;
-        vs_vx[i] = newState.vx;
-        vs_vy[i] = newState.vy;
-        vs_heading[i] = newState.heading;
-        vs_turnRate[i] = newState.turnRate;
+        vs_x[i] = vs.x;
+        vs_y[i] = vs.y;
+        vs_vx[i] = vs.vx;
+        vs_vy[i] = vs.vy;
+        vs_heading[i] = vs.heading;
+        vs_turnRate[i] = vs.turnRate;
 
     return;
 }
 
-void runCudaSimulationSoA(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
+void runCudaSimulationSoA_batched(vehicleBatch& vehicles, environment& env, std::size_t N, float dt, std::size_t steps){
 
-    std::size_t curr_step = 0;
 
     const std::size_t floatBytes = N * sizeof(float);
 
@@ -111,24 +116,20 @@ void runCudaSimulationSoA(vehicleBatch& vehicles, environment& env, std::size_t 
     std::size_t threads = 256;
     std::size_t blocks = (N + threads-1)/threads;
 
-        //run sim for steps amount of steps
-    while(curr_step < steps){
+    //all steps batched on GPU
+    
+    //launch cuda kernel
+    update_SoA_batched<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt, steps);
+    
+    //check for kernel launch errors
+    cudaError_t error = cudaGetLastError();
 
-        
-        //launch cuda kernel
-        update<<<blocks,threads>>>(vs_x, vs_y, vs_vx, vs_vy, vs_heading, vs_turnRate, vs_goalx, vs_goaly, N, env, dt, curr_step);
-        
-        //check for kernel launch errors
-        cudaError_t error = cudaGetLastError();
-
-        if (error != cudaSuccess) {
-            throw std::runtime_error(cudaGetErrorString(error));
-        }
-
-        curr_step++;
+    if (error != cudaSuccess) {
+        throw std::runtime_error(cudaGetErrorString(error));
     }
 
-    //error check
+
+//error check
 
     error = cudaDeviceSynchronize();
 

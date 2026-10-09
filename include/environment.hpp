@@ -8,7 +8,7 @@ public:
 
 std::size_t m_width;
 std::size_t m_height;
-float elapsed;
+
 
 private:
 float* velFieldx;
@@ -19,7 +19,7 @@ environment(std::size_t w, std::size_t h);
 
 __device__ float2 getDisturbance(float x, float y, float time) const;
 
-void updateTime(float dt);
+
 
 };
 

@@ -3,8 +3,8 @@
 
 environment::environment(std::size_t w, std::size_t h): 
 m_width(w), 
-m_height(h),
-elapsed(0.0f)
+m_height(h)
+
 {
 
     //wind vel field  zero across the board for first implementation
@@ -44,9 +44,4 @@ __device__ float2 environment::getDisturbance(float x, float y, float time) cons
     return {windX, windY};
 
 };
-
-void environment::updateTime(float dt){
-    //track elapsed time for random velocity generation later
-    elapsed += dt;
-}
 

@@ -24,7 +24,7 @@ int main(int argNum, char* argVals[]){
     //default values
     std::size_t N = 1000;
     std::size_t steps = 1000;
-    bool soa = true;
+    int type;
 
     //take in input variables
 
@@ -33,18 +33,7 @@ int main(int argNum, char* argVals[]){
     //set step size
     if (argNum > 2) steps = std::stoi(argVals[2]);
     //set AoS vs SoA version
-    if (argNum > 3) {
-        const std::string value = argVals[3];
-
-        if (value == "1") {
-            soa = true;
-        } else if (value == "0") {
-            soa = false;
-        } else {
-            std::cerr << "Layout must be 1 (SoA) or 0 (AoS).\n";
-            return 1;
-        }
-    }
+    if (argNum > 3) type = std::stoi(argVals[3]);
     
 
     std::cout << "Vehicles: " << N << "\nSteps: " << steps << '\n';
@@ -60,10 +49,14 @@ int main(int argNum, char* argVals[]){
 
     //launch Cuda Kernel operations
     try{
-        if(soa == true){
+        if(type == 1){
             std::cout << "SoA" << std::endl;
             runCudaSimulationSoA(vehicles, env, N, dt, steps);
-        }else{
+        else if(type == 2){
+            std::cout << "SoA Batched" << std::endl;
+            runCudaSimulationSoA_batched(vehicles, env, N, dt, steps);
+        }
+        else{
             std::cout << "AoS" << std::endl;
             runCudaSimulationAoS(vehicles, env, N, dt, steps);
         }
