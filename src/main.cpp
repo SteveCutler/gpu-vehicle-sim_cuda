@@ -52,6 +52,7 @@ int main(int argNum, char* argVals[]){
         if(type == 1){
             std::cout << "SoA" << std::endl;
             runCudaSimulationSoA(vehicles, env, N, dt, steps);
+        }
         else if(type == 2){
             std::cout << "SoA Batched" << std::endl;
             runCudaSimulationSoA_batched(vehicles, env, N, dt, steps);
