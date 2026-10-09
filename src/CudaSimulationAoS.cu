@@ -89,8 +89,7 @@ void runCudaSimulationAoS(vehicleBatch& vehicles, environment& env, std::size_t 
             throw std::runtime_error(cudaGetErrorString(error));
         }
 
-        //increment step counter
-        env.updateTime(dt);
+ 
         curr_step++;
     }
 
