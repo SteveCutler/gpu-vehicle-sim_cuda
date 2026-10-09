@@ -13,6 +13,7 @@ add_executable(vehicle_sim
     src/dynamics.cu
     src/controller.cu
     src/CudaSimulationSoA.cu
+    src/CudaSimulationSoA_batched.cu
     src/CudaSimulationAoS.cu
 )
 
