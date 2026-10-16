@@ -1,4 +1,4 @@
-GPU Vehicle Simulation — CUDA
+# GPU Vehicle Simulation — CUDA
 A CUDA simulation of independent 2D vehicles, built to investigate how memory layout and timestep batching affect simulation throughput.
 The project compares three GPU implementations against a serial C++ reference: array of structs (AoS), structure of arrays (SoA), and SoA with the entire rollout inside a single kernel. Each vehicle follows a fixed feedback controller through a procedural disturbance field.
 Measured result: 1,000,000 vehicles × 100 timesteps in 0.269 s, versus 20.55 s for the serial CPU reference—approximately 76.4× faster on the project's Tesla T4 / Xeon test setup, including GPU allocation and transfer costs. See the timing scopes and limitations below.
