@@ -2,8 +2,10 @@
 A CUDA simulation of independent 2D vehicles, built to investigate how memory layout and timestep batching affect simulation throughput.
 The project compares three GPU implementations against a serial C++ reference: array of structs (AoS), structure of arrays (SoA), and SoA with the entire rollout inside a single kernel. Each vehicle follows a fixed feedback controller through a procedural disturbance field.
 Measured result: 1,000,000 vehicles × 100 timesteps in 0.269 s, versus 20.55 s for the serial CPU reference—approximately 76.4× faster on the project's Tesla T4 / Xeon test setup, including GPU allocation and transfer costs. See the timing scopes and limitations below.
-[C++ reference and visualization](https://github.com/SteveCutler/gpu-vehicle-sim_cpp) · [Experiment notebook](https://colab.research.google.com/drive/1Oha_W-K_uN2omVKECxBUDF-z6V5Aaw0-?usp=sharing)
+
 <img width="494" height="481" alt="VehicleSimulator_screencap" src="https://github.com/user-attachments/assets/771777e4-f909-40cd-aa7b-9686d54e0f96" />
+
+[C++ reference and visualization](https://github.com/SteveCutler/gpu-vehicle-sim_cpp) · [Experiment notebook](https://colab.research.google.com/drive/1Oha_W-K_uN2omVKECxBUDF-z6V5Aaw0-?usp=sharing)
 
 
 Implementation highlights
